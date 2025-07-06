@@ -1,0 +1,39 @@
+
+# A seção 'services' é onde definimos os contêineres que compõem a nossa aplicação.
+# Cada chave sob 'services' é o nome de um serviço (contêiner).
+services:
+  # 'api' é o nome que escolhemos para o serviço da nossa aplicação FastAPI.
+  app:
+    # A instrução 'build: .' diz ao Docker Compose para construir a imagem Docker
+    # para este serviço usando o 'Dockerfile' encontrado no diretório atual ('.').
+    build: .
+
+    container_name: api
+
+    # A seção 'ports' mapeia as portas entre a máquina host e o contêiner.
+    # - "8000:8000" -> Mapeia a porta 8000 do seu computador (host) para a
+    #   porta 8000 dentro do contêiner, onde a aplicação Uvicorn está rodando.
+    #   Isso permite que você acesse a API em http://localhost:8000.
+    ports:
+      - "8000:8000"
+
+    # A seção 'volumes' monta um diretório do host dentro do contêiner.
+    # - ".:/app" -> Monta o diretório atual ('.') do seu projeto na sua máquina
+    #   para o diretório '/app' dentro do contêiner (que definimos como WORKDIR no Dockerfile).
+    #   Isso é crucial para o desenvolvimento por duas razões:
+    #   1. Live Reload: As alterações que você faz no código no seu editor são refletidas
+    #      instantaneamente dentro do contêiner, e o Uvicorn com a flag '--reload' reinicia o servidor.
+    #   2. Persistência de Dados: O banco de dados SQLite ('escola.db') será criado no
+    #      diretório do seu projeto no host, garantindo que os dados não sejam perdidos ao parar o contêiner.
+    volumes:
+      - .:/app
+
+    # 'command' sobrescreve o comando padrão (CMD) do Dockerfile.
+    # Usamos isso para rodar a aplicação em modo de desenvolvimento com recarregamento automático.
+    # 'uvicorn app:app' -> Executa o objeto 'app' do arquivo 'app.py'.
+    # '--host 0.0.0.0' -> Faz o servidor escutar em todas as interfaces de rede dentro do contêiner,
+    #                     o que é necessário para que ele seja acessível de fora.
+    # '--port 8000' -> Roda na porta 8000 dentro do contêiner.
+    # '--reload' -> Ativa o recarregamento automático ao detectar mudanças no código.
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+
